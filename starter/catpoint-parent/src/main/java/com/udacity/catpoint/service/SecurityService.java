@@ -29,24 +29,14 @@ public class SecurityService {
     }
 
     /**
-     * Sets the current arming status for the system. Changing the arming status
-     * may update both the alarm status.
-     * @param armingStatus
-     */
-    public void setArmingStatus(ArmingStatus armingStatus) {
-        if(armingStatus == ArmingStatus.DISARMED) {
-            setAlarmStatus(AlarmStatus.NO_ALARM);
-        }
-        securityRepository.setArmingStatus(armingStatus);
-    }
-
-    /**
      * Internal method that handles alarm status changes based on whether
      * the camera currently shows a cat.
      * @param cat True if a cat is detected, otherwise false.
      */
     private void catDetected(Boolean cat) {
         if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME) {
+            setAlarmStatus(AlarmStatus.ALARM);
+        } else if (cat && getArmingStatus() == ArmingStatus.ARMED_AWAY) {
             setAlarmStatus(AlarmStatus.ALARM);
         } else {
             setAlarmStatus(AlarmStatus.NO_ALARM);
@@ -65,15 +55,6 @@ public class SecurityService {
 
     public void removeStatusListener(StatusListener statusListener) {
         statusListeners.remove(statusListener);
-    }
-
-    /**
-     * Change the alarm status of the system and notify all listeners.
-     * @param status
-     */
-    public void setAlarmStatus(AlarmStatus status) {
-        securityRepository.setAlarmStatus(status);
-        statusListeners.forEach(sl -> sl.notify(status));
     }
 
     /**
@@ -127,6 +108,15 @@ public class SecurityService {
         return securityRepository.getAlarmStatus();
     }
 
+    /**
+     * Change the alarm status of the system and notify all listeners.
+     * @param status
+     */
+    public void setAlarmStatus(AlarmStatus status) {
+        securityRepository.setAlarmStatus(status);
+        statusListeners.forEach(sl -> sl.notify(status));
+    }
+
     public Set<Sensor> getSensors() {
         return securityRepository.getSensors();
     }
@@ -141,5 +131,17 @@ public class SecurityService {
 
     public ArmingStatus getArmingStatus() {
         return securityRepository.getArmingStatus();
+    }
+
+    /**
+     * Sets the current arming status for the system. Changing the arming status
+     * may update both the alarm status.
+     * @param armingStatus
+     */
+    public void setArmingStatus(ArmingStatus armingStatus) {
+        if(armingStatus == ArmingStatus.DISARMED) {
+            setAlarmStatus(AlarmStatus.NO_ALARM);
+        }
+        securityRepository.setArmingStatus(armingStatus);
     }
 }
